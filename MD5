@@ -1,15 +1,16 @@
-a3fcee9b2b2d7f5ebcb91eab26aa2281 *DESCRIPTION
+f2bfd4d39d3c473b0a9e48498694c063 *DESCRIPTION
+93909d72e07e75595ea33c8b3a8555a9 *LICENSE
 bfdbb78ca2ed33848598a1e9f4b891da *NAMESPACE
-2ef1fe0e7857cca471c4718c5fa08e93 *NEWS
+0bdd16fc73104ce46749df3fc2f678ea *NEWS
 e0f0eb3f29ca1f5b72f4a447f7dceb59 *R/get_traits.R
 7cc2b0e7b754db2a353368c826ffc5d5 *R/match_traits.R
 7923ac7f42bc294b8d6139ea0c8b0b6a *R/rspear-package.R
-ea42cf9ffec206ef870dfda591ec6fb0 *R/spear.R
-f41ccd3c6beb1284fede819a92590369 *README.md
+ba0822ca4de71d9506ed02218b97f741 *R/spear.R
 5e250889ded3f24c9f57d66a3ad858c7 *data/spear_example.rda
 58237807fa8e8d81576058790a14153b *inst/CITATION
+739ba9b3342f3d144203c2884e5ffb09 *inst/doc/rspear.R
 65e1c189cbaf8b5ab678e9b50fee47b8 *inst/doc/rspear.Rnw
-74d18f542cc364cb8183ae1ef2727d5d *inst/doc/rspear.pdf
+cd9f586d5575474d1deabd7863b9aa45 *inst/doc/rspear.pdf
 b82a1fbd87f4e8e39dca571f19e46933 *inst/tests/test_modified_traits.R
 6ecb24a09e6b7d271fcd014ed8c75000 *inst/tests/test_spear_calculation.R
 4680e3a0dffea834c0c01095d080c2ef *inst/tests/test_trait_matching.R
@@ -19,3 +20,4 @@ b6a98ae03b816ce5994503569547face *man/rspear-package.Rd
 f9b3827a4812bed27601dc5211fd3e62 *man/spear.Rd
 bdd2dfc274508c6d62448ea3618fbec9 *man/spear_example.Rd
 7d9e32df636493ffae39b487f08c9ea5 *tests/run-all.R
+65e1c189cbaf8b5ab678e9b50fee47b8 *vignettes/rspear.Rnw

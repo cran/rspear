@@ -1,4 +1,12 @@
-rspear 0.1.0
+rspear 0.1-1
+===============
+
+FIXES
+
+* excluded Readme.md from build
+* fixed for R CMD check
+
+rspear 0.1
 ===============
 
 NEW FEATURES

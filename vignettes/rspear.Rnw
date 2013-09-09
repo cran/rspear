@@ -1,0 +1,289 @@
+\documentclass{article}
+%%\VignetteIndexEntry{rspear-intro}
+%%\VignetteDepends{rspear}
+
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{helvet}
+
+%redefine environment for description (so it can be intended)
+\renewenvironment{description}[1][0pt]
+  {\list{}{\labelwidth=0pt \leftmargin=#1
+   \let\makelabel\descriptionlabel}}
+  {\endlist}
+
+\parindent=0pt
+
+\title{rspear: Calculate SPEAR in R} 
+\author{Eduard Szöcs}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle  
+\tableofcontents
+
+\section{Theoretical background}
+For theoretical background please refer to:
+\begin{itemize}
+  \item Liess M, von der Ohe PC 2005. Analyzing effects of pesticides on invertebrate communities in streams.Environmental Toxicology and Chemistry. 24, (4):954-965. 
+\end{itemize}
+
+For more information please visit:
+\begin{itemize}
+  \item \url{http://www.systemecology.eu/spear/spear-system/}
+\end{itemize}
+
+
+
+\section{Install rspear}
+rspear can be installed from CRAN:
+<<eval=FALSE>>=
+install.packages('rspear')
+@
+
+
+rspear is developed at \href{https://github.com/EDiLD/rspear}{github}. If you want to install the latest development version from github use:
+<<eval=FALSE>>=
+install.packages("devtools")
+require(devtools)
+install_github("rspear", "EDiLD")
+require(rspear)
+@
+<<echo=FALSE, results=hide>>=
+require(rspear)
+@
+
+
+
+
+\section{Functions in rspear}
+\subsection{spear()}
+\subsubsection{Description}
+The main function in the rspear-package is spear():
+\begin{lstlisting}
+  spear(x, taxa = NULL, abundance = NULL, group = NULL,
+    region = "Eurasia", traits = NULL,
+    sensitivity = -0.36, generationTime = 0.5, exposed = 1,
+    migration = 0, ...)
+\end{lstlisting}
+
+\noindent It takes the following arguments:
+\begin{description}[0.5cm]
+  \item[x] data.frame;  data.frame with abundances in the long format.
+  \item[taxa] character; name of column in x, which holds the taxon-names.
+  \item[abundance] character; name of column in x, which holds the abundances.
+  \item[group] character-vector; names of columns for groupings.
+  \item[region] character; default is set to 'Eurasia', which covers trait-data for Finland, United Kingdom, West Siberia and Central Europe. 'Finland', 'United Kingdom', 'West Siberia' are also allowed and traits may vary between different regions.
+  \item[traits] NULL or data.frame; If 'NULL' (default) then it is checked if there is a file 'traits.csv' in the working directory and if this file is up-to-date with the database. If there is no such file, it is downloaded from the web-server. Or a trait-table as returned by \lstinline|spear()|.
+  \item[sensitivity, generationTime, exposed, migration] Threshold values for classification into SPEAR. These values should only be changed if there is strong indication that they are different than these defaults! A species is classified to SPEAR if all criteria are met:
+    \begin{itemize}
+      \item sensitivity > -0.36 
+      \item generationTime >= 0.5 
+      \item exposed == 1 
+      \item migration == 0
+    \end{itemize}
+  \item[...] additional arguments passed to get\_traits(). Currently only 'check' is available. By default the file is checked if up-to-date. See get\_traits().
+\end{description}
+
+Generally the defaults are appropriate and one must only specify \textbf{x, taxa, abundance and group}.\\[1em]
+
+
+
+\subsubsection{get\_traits(), Trait-database}
+In order to minimize traffic on server trait-data is saved locally in the \textbf{working directory} (ensure that it has be set correctly).\\[0.5em]
+
+This is done in \lstinline|spear()|, via the internal function \lstinline|get_traits()|:
+\begin{lstlisting}
+  get_traits(check = TRUE)
+\end{lstlisting}
+
+\lstinline|spear()| checks if there is file 'traits.csv' in the working directory and otherwise downloads the trait-data from the web-server \url{http://www.systemecology.eu/spear/spear-calculator/} to a file 'traits.csv' into the working directory. \\[0.5em]
+
+If this file already exists, it is checked if this file is up-to-date with the web-server.\\[0.5em]
+
+\lstinline|get_traits()| takes one argument 'check' which disables checking when 'FALSE'. Check must be disabled when working offline. Check can be passed directly in \lstinline|spear()|, as in most of the examples here.
+
+
+
+\subsubsection{Matching taxon names with trait-database}
+\lstinline|spear()| matches the taxon-names with the trait table using direct and approximate string matching. It is very likely that the matches are not always 100\% (direct) (for example spelling errors, see example in section 'Usage of rspear'). \lstinline|spear()| then tries to find the species with nearest match (approximate match). However this approximate match must not always be appropiate! When there are non-direct matches a warning is printed and the user is called to check the match:
+\begin{lstlisting}
+  Warning message:
+  Non-direct taxon matches!
+Check trait table if match is appropriate!!
+\end{lstlisting}
+
+If spear cannot find an appropriate match in the trait table, the SPEAR-value for this species is set to '0' and a warning printed:
+\begin{lstlisting}
+  Warning message:
+There were unmatched species:
+xxxxxxxxx
+ Set SPEAR to 0
+\end{lstlisting}
+
+\subsubsection{Output}
+\lstinline|spear()| returns a list of two elements ('spear' and 'traits):
+\begin{description}[0.5cm]
+   \item[spear] a data.frame with the SPEAR-values for every combination of the grouping variables
+   \item[traits] a data.frame with the following columns:
+    \begin{description}[0.5cm]
+    \item[region, exposed, generationTime, sensitivity, migration] species traits used to classify species into SPEAR.
+    \item[SPEAR] Classification of species into SPEAR.
+    \item[taxa\_data] taxon names as in x.
+    \item[taxa\_matched] matched taxon-names in traits-database.
+    \item[match\_val] goodness of match. '-1' indicates a direct match, 'NA' indicates a failed match. Values between 0 and 0.5 indicate an approximate match (smaller values - better match)
+    \end{description}
+\end{description}
+
+
+
+\section{Usage of rspear}
+The usage of the rspear-package is explained on fictitious example data. The example data is shipped with the package:
+
+<<>>=
+data(spear_example)
+head(spear_example)
+@
+
+\noindent Description of the data-set:
+\begin{description}[0.5cm]
+  \item[Taxon] The taxon names. There are spelling errors in the taxon names (\emph{'Baetis rodani'}), Baetis is listed as \emph{'Baetis sp.'} and \emph{'Baetis'} and there is weird species named \emph{'xxxxxxxxx'}.
+  \item[Abundance] Abundances
+  \item[Year] There is data from different year, so this is a grouping variable (we want SPEAR-values per year)
+  \item[Site] Data has been sampled at four sites, so this is also a group-variable
+\end{description}
+
+
+
+\subsection{Data requirements}
+Like the web application rspear requires data in the long format (see \lstinline|spear_example| from above). 
+Ecologists often organized their data in wide format (eg. species x samples matrix). This data must be transformed into the long-format, eg using the melt() function from the reshape2 package.
+
+For example if we have a columns for every species (wide-format):
+<<results=hide, echo=FALSE>>=
+require(reshape2)
+df_wide <- dcast(spear_example, Site + Year ~ Taxon, value.var="Abundance", fill = 0)[ , 1:6]
+@
+<<>>=
+df_wide
+@
+
+We can transform it to the long format using \lstinline|melt| from the reshape2-package:
+<<>>=
+require(reshape2)
+df_long <- melt(df_wide, id = c("Site", "Year"))
+head(df_long)
+@
+
+
+
+\subsection{Calculation of SPEAR}
+When we have the data in the long-format we can use \lstinline|spear()| to calculate the spear values.
+First argument is our data in the long format (spear\_example), then we must specify the columns coding for 
+taxon-names, abundances and grouping variables:
+
+<<eval=FALSE>>=
+sp <- spear(spear_example, 
+            taxa = "Taxon", abundance = "Abundance", group = c("Year", "Site"))
+@
+
+Column names can be entered as characters or (less error-prone) using names():
+
+<<>>=
+names(spear_example)
+sp <- spear(spear_example , 
+            taxa = names(spear_example)[1], abundance = names(spear_example)[2],
+            group = names(spear_example)[3:4], 
+            check = FALSE)
+@
+
+Here we can take advantage of the defaults:
+\begin{description}[1cm]
+  \item[region = "Eurasia"] subsummarises Finland, UK , West Siberia and Central Europe
+  \item[traits = NULL]  Will check if we have a local file of the trait-data and otherwise download it.
+\end{description}
+
+However we are warned, that there have been approximate matches and even no matches with the trait-table:
+\begin{lstlisting}
+Warning messages:
+1: In spear(spear_example, taxa = names(spear_example)[1],  :
+  There were unmatched species:
+xxxxxxxxx
+Set SPEAR to 0.
+2: In spear(spear_example, taxa = names(spear_example)[1],  :
+  Non-direct taxon matches!
+Check trait table if match is appropriate!!
+\end{lstlisting}
+
+\vspace{1em}
+We can check the matches looking at the trait-table returned by \lstinline|spear()|:
+<<>>=
+head(sp$traits)
+@
+
+Looking at \lstinline|match_val| we see that there has been no match (match\_val == NA) for taxon 'xxxxxxxxx'  and 'Baetis rodani' has been matched approximately  (match\_val = 0.1) with 'Baetis rhodani'. All other taxa have been matched directly (match\_val = -1). The SPEAR-value for 'xxxxxxxx' has been set to '0'. We could check and clean our input data, but the matches are appropriate in this case.\\[1em]
+
+Now let's take a look at the SPEAR-values:
+<<>>=
+sp$spear
+@
+
+spear() return the result in a data.frame which can be directly used for further analysis (plotting, hypothesis testing, etc):
+
+<<boxplot, fig=TRUE>>=
+spear_df <- sp$spear
+plot(SPEAR ~ factor(Year), data = spear_df)
+@
+
+
+
+\subsection{Modifying trait-values}
+To modify trait-values we can use the trait-table returned by spear():\\[1em]
+First we make a copy of the returned trait-table and then we can modify this table. 
+
+For example we set that \emph{Baetis rhodani} is exposed to pesticides:
+<<>>=
+traits_modi <- sp$traits
+traits_modi[traits_modi$taxa_matched %in% "Baetis rhodani", "exposed"] <- c(1,1)
+head(traits_modi)
+@
+
+Note that when selecting \emph{Baetis rhodani} from the trait-table, we have to change two values, because of the spelling error in the data.\\[1em]
+
+This modified trait-table can then be supplied to the 'traits'-Argument of \lstinline|spear()|:
+<<>>=
+sp_modi <- spear(spear_example , 
+            taxa = names(spear_example)[1], abundance = names(spear_example)[2],
+            group = names(spear_example)[3:4], 
+            traits = traits_modi,
+            check = FALSE)
+head(sp_modi$spear)
+head(sp_modi$traits)
+@
+
+Note that the SPEAR-values have changed, since \emph{Baetis rhodani} is now classified as Species Ar Risk.
+
+
+
+\subsection{Modifying SPEAR-values}
+\textit{This is currently not supported.}
+
+However it can be done indirectly by modifying the trait-values (see previous section, most easily migration)
+
+\section{Miscellaneous}
+\subsection{Citation}
+<<>>=
+citation("rspear")
+@
+
+
+
+\subsection{Problems}
+rspear is developed in \href{https://github.com/EDiLD/rspear}{github}.\\
+Any problems/bugs/feature-request may be reported at \href{https://github.com/EDiLD/rspear/issues}{github} or to the author (Eduard Szöcs, \href{mailto:szoe8822@uni-landau.de}{szoe8822@uni-landau.de}) directly.
+
+
+
+\end{document}
